@@ -5,3 +5,5 @@ Pillow
 numpy
 tqdm
 pandas
+# For supabase_upload.py (install separately when uploading):
+# supabase

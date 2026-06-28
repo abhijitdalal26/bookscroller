@@ -112,14 +112,57 @@ All training data lives in `training_final/`:
 
 Items with metadata but no cover: `metadata_no_cover/catalog_no_cover.db` (~24K rows, runtime fetch needed)
 
+## GitHub Repo
+
+https://github.com/abhijitdalal26/bookscroller (public)
+
+## Embedding Pipeline (recommandation/)
+
+Code lives in `recommandation/` — Python scripts, NOT notebooks.
+
+| File | Purpose |
+|---|---|
+| `main.py` | Entry point — `python main.py` on Kaggle, `python main.py --test` locally |
+| `config.py` | Auto-detects Kaggle vs local, sets all paths/dims/weights |
+| `db_utils.py` | Loads all 4 tables, deduplicates by isbn13, adds source_count |
+| `embed_clip.py` | CLIP ViT-L/14 (768-dim), OOM-safe, checkpoint/resume every 50 batches |
+| `embed_text.py` | all-MiniLM-L6-v2 (384-dim) from title+author+genres+description |
+| `combine.py` | Weighted concat clip×0.45 + text×0.55 → float16 .npy + catalog_index.json |
+| `kaggle_setup.py` | Paste into Kaggle cell — handles Drive mount, unzip, clone, install, run |
+| `supabase_upload.py` | Upload combined_embeddings.npy to Supabase pgvector after Kaggle run |
+
+### Output files (after Kaggle run)
+Saved to `Drive/MyDrive/BookScroller/embeddings/`:
+- `clip_embeddings.npy`      (N, 768)  float16
+- `text_embeddings.npy`      (N, 384)  float16
+- `combined_embeddings.npy`  (N, 1152) float16  ← pgvector query column
+- `catalog_index.json`       isbn13 → metadata map
+
+### Local test (confirmed working)
+```bash
+conda activate bookscroller-env
+python recommandation/main.py --test           # 200 samples, both models
+python recommandation/main.py --test --text-only  # text only, no GPU needed
+```
+
+### Conda env
+`bookscroller-env` (Python 3.11) — created and tested locally.
+
+## Data on Google Drive (book project email)
+
+Drive mounted as H:\ locally.
+`H:\My Drive\BookScroller\bookscroller_data.zip` — covers (85,950 jpg) + catalog.db
+Kaggle path: `/kaggle/drive/MyDrive/BookScroller/bookscroller_data.zip`
+
 ## Next Pipeline Steps
 
-1. ✅ Training data complete — covers + metadata synced in `training_final/`
-2. **Generate CLIP embeddings** (512-dim visual) on Kaggle GPU — use covers as-is, NO resize needed for CLIP (it internally resizes to 224×224)
-3. **Generate text embeddings** — sentence-transformers all-MiniLM-L6-v2 (384-dim) for descriptions
-4. **Upload to Supabase pgvector** — halfvec (float16); covers to Supabase Storage
-5. **Resize covers BEFORE mobile display** — Lanczos to 600×900 before Supabase upload (current covers 300–500px look blurry at full-screen phone resolution). Optionally run Real-ESRGAN first on covers <400px wide if Kaggle GPU available.
-6. **Android app** — TikTok-style vertical scroll UI, dwell time tracking, runtime OL/Google Books fallback for uncached covers
+1. ✅ Training data complete — covers + metadata in `training_final/`
+2. ✅ Embedding pipeline code written and tested locally
+3. ✅ Data zipped and uploaded to book project Google Drive
+4. **Run on Kaggle GPU** — paste `kaggle_setup.py` into Kaggle notebook → run → embeddings saved to Drive (~5 min on T4)
+5. **Upload to Supabase** — run `supabase_upload.py` with SUPABASE_URL + SUPABASE_KEY. Supabase SQL schema is in the script header.
+6. **Resize covers** — Lanczos to 600×900 before Supabase Storage upload (covers currently 300–500px, will look blurry at full-screen phone resolution)
+7. **Android app** — TikTok-style vertical scroll, dwell time tracking, taste vector updated per interaction
 
 ## API Keys (reset after use)
 - NYT Books API key used in `02_nyt_bestsellers.py` — user will reset

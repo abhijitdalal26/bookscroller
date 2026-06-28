@@ -47,10 +47,12 @@ def generate_clip_embeddings(
             images = [_load_image(p) for p in batch_paths]
 
             try:
-                inputs = processor(
-                    images=images, return_tensors='pt', padding=True
-                ).to(device)
-                feats = model.get_image_features(**inputs)
+                pixel_values = processor(
+                    images=images, return_tensors='pt'
+                )['pixel_values'].to(device)
+                # Use vision_model + projection directly — works across all transformers versions
+                vision_out = model.vision_model(pixel_values=pixel_values)
+                feats = model.visual_projection(vision_out.pooler_output)
                 feats = feats / feats.norm(dim=-1, keepdim=True)  # L2 normalize
                 all_embeddings.append(feats.cpu().float().numpy())
                 pbar.update(len(batch_paths))

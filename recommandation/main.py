@@ -135,6 +135,17 @@ def main():
     else:
         print("Nothing to save (both --clip-only and --text-only? Pick one.)")
 
+    # ── 5. Copy to Drive (Colab only) ───────────────────────────────
+    if config.IS_COLAB and config.DRIVE_OUTPUT:
+        import shutil
+        drive_out = config.DRIVE_OUTPUT
+        drive_out.mkdir(parents=True, exist_ok=True)
+        print(f"\n[5/5] Copying outputs to Drive ({drive_out})...")
+        for f in output_dir.glob('*'):
+            shutil.copy2(f, drive_out / f.name)
+            print(f"  {f.name}  ({f.stat().st_size / 1e6:.1f} MB)")
+        print("Drive copy done.")
+
     elapsed = time.time() - t_start
     print(f"\nTotal time: {elapsed/60:.1f} min")
     print("Done.")

@@ -9,18 +9,21 @@ IS_COLAB  = os.path.exists('/content') and os.path.exists('/usr/local/lib/python
 IS_KAGGLE = os.path.exists('/kaggle/working') and not IS_COLAB
 
 if IS_COLAB:
-    COVERS_DIR = Path('/content/covers')
-    DB_PATH    = Path('/content/catalog.db')
-    OUTPUT_DIR = Path('/content/drive/MyDrive/BookScroller/embeddings')
+    COVERS_DIR   = Path('/content/covers')
+    DB_PATH      = Path('/content/catalog.db')
+    OUTPUT_DIR   = Path('/content/embeddings')           # local — fast writes, no network lag
+    DRIVE_OUTPUT = Path('/content/drive/MyDrive/BookScroller/embeddings')  # copied here at end
 elif IS_KAGGLE:
-    COVERS_DIR = Path('/kaggle/working/covers')
-    DB_PATH    = Path('/kaggle/working/catalog.db')
-    OUTPUT_DIR = Path('/content/drive/MyDrive/BookScroller/embeddings')
+    COVERS_DIR   = Path('/kaggle/working/covers')
+    DB_PATH      = Path('/kaggle/working/catalog.db')
+    OUTPUT_DIR   = Path('/kaggle/working/embeddings')
+    DRIVE_OUTPUT = None
 else:
-    _BASE      = Path(__file__).parent
-    COVERS_DIR = _BASE / 'data/training_final/covers'
-    DB_PATH    = _BASE / 'data/training_final/catalog.db'
-    OUTPUT_DIR = _BASE / 'output'
+    _BASE        = Path(__file__).parent
+    COVERS_DIR   = _BASE / 'data/training_final/covers'
+    DB_PATH      = _BASE / 'data/training_final/catalog.db'
+    OUTPUT_DIR   = _BASE / 'output'
+    DRIVE_OUTPUT = None
 
 # Models
 CLIP_MODEL = 'openai/clip-vit-large-patch14'  # ViT-L/14 → 768-dim

@@ -1,13 +1,18 @@
 """
 Environment-aware config.
-Auto-detects Kaggle vs local and sets paths accordingly.
+Auto-detects Colab, Kaggle, or local and sets paths accordingly.
 """
 import os
 from pathlib import Path
 
-IS_KAGGLE = os.path.exists('/kaggle/working')
+IS_COLAB  = os.path.exists('/content') and os.path.exists('/usr/local/lib/python3.12/dist-packages/google/colab')
+IS_KAGGLE = os.path.exists('/kaggle/working') and not IS_COLAB
 
-if IS_KAGGLE:
+if IS_COLAB:
+    COVERS_DIR = Path('/content/covers')
+    DB_PATH    = Path('/content/catalog.db')
+    OUTPUT_DIR = Path('/content/drive/MyDrive/BookScroller/embeddings')
+elif IS_KAGGLE:
     COVERS_DIR = Path('/kaggle/working/covers')
     DB_PATH    = Path('/kaggle/working/catalog.db')
     OUTPUT_DIR = Path('/content/drive/MyDrive/BookScroller/embeddings')

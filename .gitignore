@@ -1,0 +1,41 @@
+# Data — never push
+recommandation/data/
+output/
+embeddings/
+*.db
+*.npy
+*.npz
+*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Env
+.env
+*.env
+venv/
+env/
+.venv/
+bookscroller-env/
+
+# Models cache
+.cache/
+models/
+huggingface/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp

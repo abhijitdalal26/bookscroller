@@ -100,6 +100,7 @@ def main():
         clip_emb = generate_clip_embeddings(
             df['cover_path'].tolist(),
             batch_size=config.CLIP_BATCH_SIZE,
+            output_dir=output_dir,
         )
         print(f"  Done in {(time.time()-t)/60:.1f} min  shape={clip_emb.shape}")
 

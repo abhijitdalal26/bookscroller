@@ -1,6 +1,7 @@
 # Data — never push
 recommandation/data/
 output/
+output_*/
 embeddings/
 *.db
 *.npy

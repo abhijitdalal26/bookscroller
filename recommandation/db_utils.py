@@ -17,7 +17,7 @@ def _load_table(conn: sqlite3.Connection, table: str) -> pd.DataFrame:
     if table == 'books':
         return pd.read_sql_query("""
             SELECT
-                isbn13,
+                COALESCE(isbn13, 'goodreads_' || book_id) AS isbn13,
                 title,
                 author,
                 description,
@@ -28,7 +28,7 @@ def _load_table(conn: sqlite3.Connection, table: str) -> pd.DataFrame:
                 cover_file,
                 'books' AS src
             FROM books
-            WHERE isbn13 IS NOT NULL AND cover_file IS NOT NULL
+            WHERE cover_file IS NOT NULL
         """, conn)
 
     if table == 'nyt_books':

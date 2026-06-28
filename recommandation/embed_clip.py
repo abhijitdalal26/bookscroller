@@ -12,7 +12,10 @@ from pathlib import Path
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 from config import CLIP_MODEL, CLIP_BATCH_SIZE
+
+NUM_LOAD_WORKERS = 8   # parallel PIL workers for image loading
 
 CHECKPOINT_EVERY = 50   # save partial results every N batches (~12K images at batch=256)
 CHECKPOINT_FILE  = 'clip_checkpoint.npy'
@@ -73,12 +76,26 @@ def generate_clip_embeddings(
     i = start_i
     batches_since_ckpt = 0
 
-    with torch.no_grad():
+    with torch.no_grad(), ThreadPoolExecutor(max_workers=NUM_LOAD_WORKERS) as loader:
         pbar = tqdm(total=len(cover_paths), initial=start_i,
                     desc='CLIP embeddings', unit='img')
+
+        # Prefetch first batch while GPU does nothing yet
+        def _load_batch(paths):
+            return list(loader.map(_load_image, paths))
+
+        next_future = loader.submit(_load_batch, cover_paths[i : i + batch_size])
+
         while i < len(cover_paths):
             batch_paths = cover_paths[i : i + batch_size]
-            images = [_load_image(p) for p in batch_paths]
+            images = next_future.result()   # wait for prefetched batch
+
+            # Kick off loading the NEXT batch in background (overlaps GPU work)
+            next_i = i + batch_size
+            if next_i < len(cover_paths):
+                next_future = loader.submit(
+                    _load_batch, cover_paths[next_i : next_i + batch_size]
+                )
 
             try:
                 pixel_values = processor(

@@ -13,7 +13,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-DRIVE_ZIP   = '/kaggle/drive/MyDrive/BookScroller/bookscroller_data.zip'
+DRIVE_MOUNT = '/content/drive'
+DRIVE_ZIP   = '/content/drive/MyDrive/BookScroller/bookscroller_data.zip'
 WORKING_DIR = Path('/kaggle/working')
 REPO_URL    = 'https://github.com/abhijitdalal26/bookscroller.git'
 REPO_DIR    = WORKING_DIR / 'bookscroller'
@@ -34,8 +35,8 @@ def step(msg: str):
 step("1 / 5  Mounting Google Drive")
 try:
     from google.colab import drive
-    drive.mount('/kaggle/drive')
-    print("Drive mounted at /kaggle/drive")
+    drive.mount(DRIVE_MOUNT)
+    print(f"Drive mounted at {DRIVE_MOUNT}")
 except Exception as e:
     print(f"Drive mount skipped ({e}) — assuming already mounted or data copied manually")
 
@@ -77,7 +78,7 @@ run(f"pip install -q -r '{REPO_DIR}/recommandation/requirements.txt'")
 # ── Step 5: Run embedding pipeline ───────────────────────────────
 step("5 / 5  Running embedding pipeline")
 
-output_dir = '/kaggle/drive/MyDrive/BookScroller/embeddings'
+output_dir = '/content/drive/MyDrive/BookScroller/embeddings'
 script     = str(REPO_DIR / 'recommandation' / 'main.py')
 
 # Change to repo dir so relative imports work
@@ -86,7 +87,7 @@ sys.path.insert(0, str(REPO_DIR / 'recommandation'))
 
 run(f"python '{script}' --output '{output_dir}'")
 
-print("\n✓ All done! Embeddings saved to Google Drive.")
+print("\nAll done! Embeddings saved to Google Drive.")
 print(f"  {output_dir}/clip_embeddings.npy")
 print(f"  {output_dir}/text_embeddings.npy")
 print(f"  {output_dir}/combined_embeddings.npy")

@@ -10,7 +10,7 @@ IS_KAGGLE = os.path.exists('/kaggle/working')
 if IS_KAGGLE:
     COVERS_DIR = Path('/kaggle/working/covers')
     DB_PATH    = Path('/kaggle/working/catalog.db')
-    OUTPUT_DIR = Path('/kaggle/drive/MyDrive/BookScroller/embeddings')
+    OUTPUT_DIR = Path('/content/drive/MyDrive/BookScroller/embeddings')
 else:
     _BASE      = Path(__file__).parent
     COVERS_DIR = _BASE / 'data/training_final/covers'

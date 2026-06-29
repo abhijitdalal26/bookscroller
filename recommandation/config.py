@@ -5,8 +5,9 @@ Auto-detects Colab, Kaggle, or local and sets paths accordingly.
 import os
 from pathlib import Path
 
-IS_COLAB  = os.path.exists('/content') and os.path.exists('/usr/local/lib/python3.12/dist-packages/google/colab')
-IS_KAGGLE = os.path.exists('/kaggle/working') and not IS_COLAB
+# Kaggle check first — Kaggle also has /content and colab packages installed
+IS_KAGGLE = os.path.exists('/kaggle/working') or 'KAGGLE_KERNEL_RUN_TYPE' in os.environ
+IS_COLAB  = os.path.exists('/content/sample_data') and not IS_KAGGLE
 
 if IS_COLAB:
     COVERS_DIR   = Path('/content/covers')
